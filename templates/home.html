@@ -1,11 +1,19 @@
 {% extends "base.html" %}
+
 {% block title %}DMC{% endblock title %}
 
 {% block body %}
-<div class="row well">
-    <h1></h1>
-    <p>
+<div class="row">
+    <div class="span6">
+        <ul>
+        {% for url, m in data.items %}
+            <li><a href="{{ url }}">{{ m }}</a></li>
+        {% endfor %}
+        </ul>
+    </div>
 
-    </p>
+    <div class="span6">
+
+    </div>
 </div>
 {% endblock %}

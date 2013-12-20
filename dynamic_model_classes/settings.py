@@ -1,6 +1,5 @@
-# -*- coding: utf-8 -*-
 """
-Django settings for dynamic_model_classes project.
+Django settings for test_admin project.
 
 For more information on this file, see
 https://docs.djangoproject.com/en/1.6/topics/settings/
@@ -13,18 +12,17 @@ https://docs.djangoproject.com/en/1.6/ref/settings/
 import os
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
-TEMPLATE_DIRS = os.path.join(BASE_DIR, 'templates')
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.6/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'lom=9i%11p=ay8xv=ug2k2r501!!h&l3#ec#iv#8tz2oxvwe(7'
+SECRET_KEY = '3$+$ylge96m@i4t^(=i!1_%n*n=@+q5=1zovgp&ry1bo%5wj*p'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
 TEMPLATE_DEBUG = True
+TEMPLATE_DIRS = os.path.join(BASE_DIR, 'templates')
 
 ALLOWED_HOSTS = []
 
@@ -39,7 +37,6 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'dynamic_model_classes',
-    'south',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -84,14 +81,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.6/howto/static-files/
 
 STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
-# добавим к контексту шаблонов процессоры
-TEMPLATE_CONTEXT_PROCESSORS = (
-    "django.contrib.auth.context_processors.auth",
-    "django.core.context_processors.debug",
-    "django.core.context_processors.i18n",
-    "django.core.context_processors.media",
-    "django.core.context_processors.static",
-    "django.core.context_processors.tz",
-    "django.contrib.messages.context_processors.messages",
-)
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
