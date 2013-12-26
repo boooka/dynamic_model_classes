@@ -1,9 +1,18 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title></title>
-</head>
-<body>
+{% extends "home.html" %}
 
-</body>
-</html>
+{% block title %}DMC-{{ m.model_name }}{% endblock title %}
+
+{% block body %}
+
+    <table>
+        <thead></thead>
+        {% for obj in objs %}
+        <tbody>
+            <tr>
+                <td>{{ obj }}</td>
+            </tr>
+        </tbody>
+        {% endfor %}
+    </table>
+
+{% endblock %}

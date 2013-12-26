@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from django.core import management
 from django.core.management.commands.runserver import Command as RunserverCommand
-from dynamic_model_classes.models import create_model, DefinitionsModel
+from dynamic_model_classes.models import create_model, YamlDocsModel
 import json
 
 
@@ -12,13 +12,10 @@ class Command(RunserverCommand):
     def setupdynamicmodels(self):
 
         # load already exists models
-        mobjs = DefinitionsModel.objects.all()
+        mobjs = YamlDocsModel.objects.all()
         for mobj in mobjs:
-            data = json.loads(mobj.definition)
-            create_model(data)
+            create_model(mobj.docname, json.loads(mobj.definition))
 
-            #     from django.db.models.loading import cache
-            #     cache.register_models('', *reg_models)
 
 
     def handle(self, addrport, *args, **options):

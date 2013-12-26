@@ -1,10 +1,11 @@
 import os
 import fnmatch
 import yaml
-
+import json
 
 from django.core.management.base import BaseCommand, CommandError
-from dynamic_model_classes.models import create_model, DefinitionsModel
+from dynamic_model_classes.models import create_model, StoredYamlModel, YamlDocsModel
+
 
 
 __author__ = 'boo'
@@ -20,7 +21,7 @@ class Command(BaseCommand):
 
         absfname = os.path.abspath(fname)
 
-        if absfname and DefinitionsModel.objects.filter(filepath=absfname):
+        if absfname and StoredYamlModel.objects.filter(filepath=absfname):
             if self.verbosity:
                 self.stdout.write('File "%s" already parsed' % absfname)
             return
@@ -28,7 +29,14 @@ class Command(BaseCommand):
         f = open(absfname)
         # now try to get parsed data from yaml formated file
         for data in yaml.load_all(f.read(-1)):
-            m = create_model(data, absfname)
+            # for late use it will be save if model(s) loaded from structured file
+            stored = StoredYamlModel(filepath=absfname)
+            stored.save()
+
+            for doc, v in data.items():
+                yamldoc = YamlDocsModel(storedby=stored, docname=doc, definition=json.dumps(v))
+                yamldoc.save()
+                create_model(doc, v)
 
     def handle(self, *args, **kwargs):
 

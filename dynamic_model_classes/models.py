@@ -1,9 +1,12 @@
+import re
 from django.conf import settings
+from django.conf.urls import url
 from django.contrib import admin
 from django.db import models
-from forms import MyBaseForm
+from django.db.models.loading import cache
+from django.forms import forms, fields, widgets
 
-import json
+from forms import MyBaseForm
 
 
 __author__ = 'boo'
@@ -14,7 +17,6 @@ def create_abstract(name, fields=None, app_label='', module='', options=None, ad
     Create specified model
     """
     class Meta:
-        # Using type('Meta', ...) gives a dictproxy error during model creation
         pass
 
     if app_label:
@@ -27,6 +29,7 @@ def create_abstract(name, fields=None, app_label='', module='', options=None, ad
             setattr(Meta, key, value)
 
     # Set up a dictionary to simulate declarations within a class
+    # also model_name attr point at func
     attrs = {'__module__': module, 'Meta': Meta}
 
     # Add in any fields that were provided
@@ -34,10 +37,7 @@ def create_abstract(name, fields=None, app_label='', module='', options=None, ad
         attrs.update(fields)
 
     # Create the class, which automatically triggers ModelBase processing
-    model = type(str(name), (models.Model,), attrs)
-
-    # Create an Admin class if admin options were provided
-    admin.site.register(model)
+    model = type(str(name), (DynamicModel,), attrs)
 
     if admin_opts is not None:
         class Admin(admin.ModelAdmin):
@@ -45,68 +45,117 @@ def create_abstract(name, fields=None, app_label='', module='', options=None, ad
         for key, value in admin_opts:
             setattr(Admin, key, value)
 
+    # Create an Admin class if admin options were provided
+    admin.site.register(model)
+
     return model
 
 
-class DefinitionsModel(models.Model):
-    definition = models.TextField()
+class DynamicModel(models.Model):
+
+
+    class Meta:
+        abstract = True
+
+    @classmethod
+    def model_name(cls):
+        return cls._meta.model.__name__
+
+    @classmethod
+    def isdynamic(cls):
+         return True
+
+    def __unicode__(self):
+        return u'%s: %s' % (
+            self.model_name(),
+            ','.join([unicode(getattr(self,f.name)) for f in self._meta.fields])
+        )
+
+
+class StoredYamlModel(models.Model):
+
+    id = models.AutoField(primary_key=True)
     filepath = models.FilePathField()
 
+    def __unicode__(self):
+        return u'%s' % self.id
 
 
-def create_model(data, fname=''):
+class YamlDocsModel(models.Model):
+
+    id = models.AutoField(primary_key=True)
+    storedby = models.ForeignKey(StoredYamlModel)
+    docname = models.CharField(max_length=255)
+    definition = models.TextField()
+
+    def __unicode__(self):
+        return u'%s' % self.docname
+
+def create_model(docname, data):
     # init mapped types
     maptypes = {
-        'char': models.CharField(max_length=255),
-        'int' : models.IntegerField(),
-        'date': models.DateField(auto_now=True),
+        'char': {
+            'model': models.CharField(max_length=255),
+            'form': fields.CharField(),
+        },
+        'int' : {
+            'model': models.IntegerField(),
+            'form': fields.IntegerField(),
+        },
+        'date': {
+            'model': models.DateField(auto_now=True),
+            'form': fields.DateTimeField(widget=widgets.DateTimeInput),
+        },
     }
-    # if model(s) loaded from file save structure for late
-    if fname:
-        obj = DefinitionsModel()
-        obj.filepath = fname
-        obj.definition = json.dumps(data)
-        obj.save()
 
-    # iterate over docs from data
-    for doc, v in data.items():
+    prefields = dict(
+        id = models.AutoField(primary_key=True)
+    )
+    formfields, options = dict(), dict()
 
-        prefields, options = dict(), dict()
+    options['verbose_name'] = data.get('title')
+    # check for contained fields list
+    if 'fields' in data and isinstance(data.get('fields'),list):
+        for field in data['fields']:
+            # skip as unformated
+            if not isinstance(field,dict):
+                continue
+            # skip without names
+            if not 'id' in field:
+                continue
 
-        options['verbose_name'] = v.get('title')
-        # check for contained fields list
-        if 'fields' in v and isinstance(v.get('fields'),list):
-            for field in v['fields']:
-                # skip as unformated
-                if not isinstance(field,dict):
-                    continue
-                # skip without names
-                if not 'id' in field:
-                    continue
-
-                fieldname = field['id']
-                prefields[fieldname] = maptypes['char']
-                if 'type' in field:
-                    prefields[fieldname] = maptypes[field.get('type')]
-                if 'title' in field:
-                    setattr(prefields[fieldname], 'help_text', field.get('title'))
-
-        # m = type(doc, (models.Model,), dict(fields=prefields, __module__='dynamic_model_classes.models'))
-        params = dict(
-            app_label='dynamic_model_classes',
-            module='dynamic_model_classes.models',
-            doc=doc,
-            )
-
-        # create dynamic model by params
-        created = create_abstract(
-            '%(doc)s' % params,
-            app_label=params['app_label'],
-            fields=prefields,
-            module=params['module'],
-            admin_opts={},
-            options=options,
+            fieldname = field['id']
+            prefields[fieldname] = maptypes['char']['model']
+            formfields[fieldname] = maptypes['char']['form']
+            if 'type' in field:
+                prefields[fieldname] = maptypes[field.get('type')]['model']
+                formfields[fieldname] = maptypes[field.get('type')]['form']
+            if 'title' in field:
+                setattr(prefields[fieldname], 'help_text', field.get('title'))
+                setattr(formfields[fieldname], 'help_text', field.get('title'))
+    # m = type(doc, (models.Model,), dict(fields=prefields, __module__='dynamic_model_classes.models'))
+    params = dict(
+        app_label=__package__,
+        module=__name__,
+        doc=docname,
         )
+    # create dynamic form
+    myform = type('%sForm' % str(docname), (MyBaseForm,),dict(fields=formfields))
+
+    # create dynamic model by params
+    created = create_abstract(
+        '%(doc)s' % params,
+        app_label=params['app_label'],
+        fields=prefields,
+        module=params['module'],
+        admin_opts={},
+        options=options,
+    )
+
+# create urls
+#     from django.db.models.loading import cache
+#     cache.register_models('', *reg_models)
+
 
 
 @models.permalink
@@ -114,4 +163,10 @@ def get_absolute_url(self):
     return (''.join([self._meta.object_name,'.views.details']), [str(self.id)])
 
 
+def get_model(name=''):
+
+    if name:
+        return cache.get_model(__package__, name)
+
+    return [m for m in cache.get_models(cache.get_app(__package__)) if hasattr(m,'isdynamic')]
 

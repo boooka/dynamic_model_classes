@@ -2,18 +2,15 @@
 
 {% block title %}DMC{% endblock title %}
 
-{% block body %}
-<div class="row">
-    <div class="span6">
+{% block menu %}
         <ul>
-        {% for url, m in data.items %}
-            <li><a href="{{ url }}">{{ m }}</a></li>
+
+        {% for model, mname in data.items %}
+
+            {% if model.model_name %}
+                <li><a href="{% url "by_model" model=model.model_name %}">{{ mname }}</a></li>
+            {% endif %}
         {% endfor %}
+
         </ul>
-    </div>
-
-    <div class="span6">
-
-    </div>
-</div>
 {% endblock %}

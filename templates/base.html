@@ -5,6 +5,8 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=0.8" />
 
+    <link rel="stylesheet" href="/media/css/base.css" />
+
     <link rel="shortcut icon" href="/media/img/favicon.png" />
     <link rel="apple-touch-icon" href="/media/img/favicon.png" />
 
@@ -14,12 +16,19 @@
   {% endblock %}
 </head>
 <body view_id name no_dhx="1">
-
-{% block menu %}
-{% endblock %}
-
-{% block body %}
-{% endblock %}
-
+<div>
+    <div>
+    {% block menu %}
+    {% endblock %}
+     </div>
+    <div class="content">
+    {% block body %}
+    {% endblock %}
+    </div>
+    <div class="edit">
+    {% block edit %}
+    {% endblock %}
+    </div>
+</div>
 </body>
 </html>
