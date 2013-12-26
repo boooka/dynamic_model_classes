@@ -19,7 +19,7 @@ if __name__ == '__main__':
               "Programming Language :: Python",
               "Topic :: Software Development :: Libraries :: Python Modules",
               ],
-          install_requires = ['pyyaml'],
+          install_requires = ['pyyaml', 'annoying'],
           package_data = {'dynamic_model_classes.views': ['templates/*.html'] },
           include_package_data = True,
           )

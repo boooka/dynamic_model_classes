@@ -1,6 +1,8 @@
 from django.conf import settings
 from django.contrib import admin
 from django.db import models
+from forms import MyBaseForm
+
 import json
 
 
@@ -65,6 +67,7 @@ def create_model(data, fname=''):
         obj.filepath = fname
         obj.definition = json.dumps(data)
         obj.save()
+
     # iterate over docs from data
     for doc, v in data.items():
 

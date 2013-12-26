@@ -11,7 +11,7 @@ __author__ = 'boo'
 
 class Command(BaseCommand):
     help = "Parse filenames, specified at the command line as a args. If they be successfully imported, as yaml formatted, then will create models."
-
+    verbosity = 0
 
     def parse_yaml(self, fname):
         if not fname and self.verbosity:
@@ -32,10 +32,10 @@ class Command(BaseCommand):
 
     def handle(self, *args, **kwargs):
 
-        verbosity = int(kwargs.get('verbosity')) > 1
+        self.verbosity = int(kwargs.get('verbosity')) > 1
 
         if not args:
-            if verbosity:
+            if self.verbosity:
                 self.stderr.write('No file names specified in command args, parse all yaml in current dir')
 
             # find yaml files in current dir
@@ -51,5 +51,5 @@ class Command(BaseCommand):
 
             self.parse_yaml(fname)
 
-        if verbosity:
+        if self.verbosity:
             self.stdout.write('Command parse all files')
