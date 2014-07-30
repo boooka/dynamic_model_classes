@@ -12,15 +12,16 @@ if __name__ == '__main__':
           url='https://github.com/boooka/dynamic_model_classes/',
           packages=find_packages(),
           license='GPL',
-          classifiers=[
-              "Intended Audience :: Developers",
-              "License :: OSI Approved :: GNU General Public License (GPL)",
-              "Natural Language :: English",
-              "Programming Language :: Python",
-              "Topic :: Software Development :: Libraries :: Python Modules",
+          classifiers=
+              [
+                  "Intended Audience :: Developers",
+                  "License :: OSI Approved :: GNU General Public License (GPL)",
+                  "Natural Language :: English",
+                  "Programming Language :: Python",
+                  "Topic :: Software Development :: Libraries :: Python Modules",
               ],
-          install_requires = ['pyyaml', 'annoying'],
-          package_data = {'dynamic_model_classes.views': ['templates/*.html'] },
-          include_package_data = True,
+          install_requires=['pyyaml', 'django', 'django-annoying'],
+          package_data={'dynamic_model_classes.views': ['templates/*.html']},
+          include_package_data=True,
           )
 

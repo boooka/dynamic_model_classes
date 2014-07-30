@@ -6,7 +6,7 @@ from django.db import models
 from django.db.models.loading import cache
 from django.forms import forms, fields, widgets
 
-from forms import MyBaseForm
+from forms import DynamicModelForm
 
 
 __author__ = 'boo'
@@ -62,8 +62,17 @@ class DynamicModel(models.Model):
         return cls._meta.model.__name__
 
     @classmethod
+    def get_model(cls):
+        return cls
+
+    @classmethod
     def isdynamic(cls):
          return True
+
+    def by_attrname(self, name=''):
+        if hasattr(self, name):
+            return getattr(self, name)
+        return 'Undefined attribute'
 
     def __unicode__(self):
         return u'%s: %s' % (
@@ -140,7 +149,7 @@ def create_model(docname, data):
         doc=docname,
         )
     # create dynamic form
-    myform = type('%sForm' % str(docname), (MyBaseForm,),dict(fields=formfields))
+    myform = type('%sForm' % str(docname), (DynamicModelForm,),dict(fields=formfields))
 
     # create dynamic model by params
     created = create_abstract(

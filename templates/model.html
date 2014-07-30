@@ -1,18 +1,36 @@
 {% extends "home.html" %}
+{% load extras %}
+
 
 {% block title %}DMC-{{ m.model_name }}{% endblock title %}
 
 {% block body %}
 
+    {% if obj %}
+
+
     <table>
-        <thead></thead>
+        <thead><tr>
+            <td>ID</td>
+        {% for f in model %}
+            <td>
+            {{ f.help_text }}
+            </td>
+        {% endfor %}
+        </tr></thead>
         {% for obj in objs %}
         <tbody>
             <tr>
-                <td>{{ obj }}</td>
+                <td>{{ obj.id }}</td>
+                {% for f in model %}
+                    <td>{{ obj|by_attrname:f.name }}</td>
+                {% endfor %}
             </tr>
         </tbody>
         {% endfor %}
     </table>
+    {% else %}
+        <h1>Begin edit data now in form below!</h1>
+    {% endif %}
 
 {% endblock %}
