@@ -1,36 +1,75 @@
 {% extends "home.html" %}
 {% load extras %}
-
-
-{% block title %}DMC-{{ m.model_name }}{% endblock title %}
+{% load static from staticfiles %}
+{% block title %}{{ model_name }}{% endblock title %}
+{% block lib %}
+    <link href="//cdnjs.cloudflare.com/ajax/libs/x-editable/1.5.0/bootstrap-editable/css/bootstrap-editable.css" rel="stylesheet"/>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/x-editable/1.5.0/bootstrap-editable/js/bootstrap-editable.js"></script>
+{% endblock %}
 
 {% block body %}
 
-    {% if obj %}
-
-
-    <table>
-        <thead><tr>
-            <td>ID</td>
+<script>
+jQuery(document).ready(function() {
+    $.fn.editable.defaults.mode = 'popup';
+    $('.xedit').editable({
+            url: '{% url "model_update" model_name %}',
+            type: 'text',
+            success: function(s){
+                if(s == 'status'){
+                    alert('status '+s);
+                    $(el).html(val);}
+                if(s == 'error') {
+                    alert('Error Processing your Request!');}
+            },
+            error: function(e){
+                alert('Error Processing your Request!!'+e);
+            }
+    });
+    /*$(document).on('click','.editable-submit',function(){
+        var id = $(this).closest('td').children('span').attr('id');
+        var val = $('.input-sm').val();
+        var el = $(this).closest('td').children('span');
+        $.ajax({
+            url: '{% url "model_update" model_name %}',
+            type: 'GET',
+            success: function(s){
+                if(s == 'status'){
+                    $(el).html(val);}
+                if(s == 'error') {
+                    alert('Error Processing your Request!');}
+            },
+            error: function(e){
+                alert('Error Processing your Request!!');
+            }
+        });
+    }); */
+});
+</script>
+    <table class="table table-bordered table-stripped table-hover" id="datatable">
+    <thead>
+        <tr>
+            <th>ID</th>
         {% for f in model %}
-            <td>
-            {{ f.help_text }}
-            </td>
+            <th>
+                {{ f.help_text }}
+            </th>
         {% endfor %}
-        </tr></thead>
-        {% for obj in objs %}
-        <tbody>
-            <tr>
-                <td>{{ obj.id }}</td>
-                {% for f in model %}
-                    <td>{{ obj|by_attrname:f.name }}</td>
-                {% endfor %}
-            </tr>
-        </tbody>
-        {% endfor %}
+        </tr>
+    </thead>
+    {% for obj in objs %}
+    <tbody>
+        <tr>
+            <td id="0:{{ obj.id }}">{{ obj.id }}</td>
+            {% for f in model %}
+                <td id="{{ forloop.counter }}:{{ obj.id }}">
+                    <a href="#" class="myeditable editable editable-click xedit" data-pk="{{ obj.id }}" id="{{ obj.id }}" data-url="{% url "model_update" model_name %}" data-type="text" >{{ obj|by_attrname:f.name }}</a>
+                </td>
+            {% endfor %}
+        </tr>
+    </tbody>
+    {% endfor %}
     </table>
-    {% else %}
-        <h1>Begin edit data now in form below!</h1>
-    {% endif %}
+    <div><textarea id="console" class="form-control" rows="8" style="width: 70%" autocomplete="off"></textarea></div>
 
 {% endblock %}

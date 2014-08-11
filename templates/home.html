@@ -3,7 +3,7 @@
 {% block title %}DMC{% endblock title %}
 
 {% block menu %}
-        <ul>
+    <ul class="nav nav-list well">
 
         {% for model, mname in data.items %}
 
@@ -11,6 +11,5 @@
                 <li><a href="{% url "by_model" model_name=model.model_name %}">{{ mname }}</a></li>
             {% endif %}
         {% endfor %}
-
-        </ul>
+    </ul>
 {% endblock %}

@@ -1,6 +1,11 @@
 # -*- coding: utf-8 -*-
+import json
+
+from django.views.decorators.csrf import csrf_exempt
 from annoying.decorators import render_to
+from django_ajax.decorators import ajax
 from models import get_model, DynamicModel
+
 
 
 __author__ = 'boo'
@@ -47,4 +52,15 @@ def model_content_view(request, model_name=None, object_id=None):
         'model': model._meta.fields[:-1],
         'objs': objs,
         'data': get_models(),
-    }
+        'model_name': model_name,
+        }
+
+
+@csrf_exempt
+@ajax
+def sync(request, model_name=None):
+    if request.method == 'POST':
+        #TODO: check and save data
+        return json.dumps({'message':'Ajax work'})
+
+    return json.dumps({'message':'Something went wrong!'})
