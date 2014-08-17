@@ -5,7 +5,7 @@
 {% block menu %}
     <ul class="nav nav-list well">
 
-        {% for model, mname in data.items %}
+        {% for model, mname in models.items %}
 
             {% if model.model_name %}
                 <li><a href="{% url "by_model" model_name=model.model_name %}">{{ mname }}</a></li>

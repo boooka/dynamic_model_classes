@@ -5,8 +5,9 @@ from django.contrib import admin
 from django.db import models
 from django.db.models.loading import cache
 from django.forms import forms, fields, widgets
+from django.utils.translation import ugettext_lazy as _
 
-from forms import DynamicModelForm
+from forms import DynamicForm
 
 
 __author__ = 'boo'
@@ -53,7 +54,7 @@ def create_abstract(name, fields=None, app_label='', module='', options=None, ad
 
 class DynamicModel(models.Model):
 
-
+    # TODO: verify why not _meta
     class Meta:
         abstract = True
 
@@ -73,6 +74,7 @@ class DynamicModel(models.Model):
         if hasattr(self, name):
             return getattr(self, name)
         return 'Undefined attribute'
+
 
     def __unicode__(self):
         return u'%s: %s' % (
@@ -100,19 +102,29 @@ class YamlDocsModel(models.Model):
     def __unicode__(self):
         return u'%s' % self.docname
 
+class CharField(models.CharField):
+    template_type = _('text')
+
+class IntegerField(models.IntegerField):
+    template_type = _('text')
+
+class DateField(models.DateField):
+    template_type = _('date')
+
+
 def create_model(docname, data):
     # init mapped types
     maptypes = {
         'char': {
-            'model': models.CharField(max_length=255),
+            'model': CharField(max_length=255),
             'form': fields.CharField(),
         },
         'int' : {
-            'model': models.IntegerField(),
+            'model': IntegerField(),
             'form': fields.IntegerField(),
         },
         'date': {
-            'model': models.DateField(auto_now=True),
+            'model': DateField(auto_now=True),
             'form': fields.DateTimeField(widget=widgets.DateTimeInput),
         },
     }
@@ -140,8 +152,9 @@ def create_model(docname, data):
                 prefields[fieldname] = maptypes[field.get('type')]['model']
                 formfields[fieldname] = maptypes[field.get('type')]['form']
             if 'title' in field:
-                setattr(prefields[fieldname], 'help_text', field.get('title'))
-                setattr(formfields[fieldname], 'help_text', field.get('title'))
+                title = field.get('title')
+                setattr(prefields[fieldname], 'label', title)
+                setattr(formfields[fieldname], 'label', title)
     # m = type(doc, (models.Model,), dict(fields=prefields, __module__='dynamic_model_classes.models'))
     params = dict(
         app_label=__package__,
@@ -149,7 +162,7 @@ def create_model(docname, data):
         doc=docname,
         )
     # create dynamic form
-    myform = type('%sForm' % str(docname), (DynamicModelForm,),dict(fields=formfields))
+    myform = type('%sForm' % str(docname), (DynamicForm,),dict(fields=formfields))
 
     # create dynamic model by params
     created = create_abstract(
@@ -173,6 +186,11 @@ def get_absolute_url(self):
 
 
 def get_model(name=''):
+    '''
+    Try to get model by name or returning all exists
+    :param name: model name
+    :return: cached model or models
+    '''
 
     if name:
         return cache.get_model(__package__, name)

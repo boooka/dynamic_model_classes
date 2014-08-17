@@ -1,5 +1,5 @@
 {% extends "home.html" %}
-{% load extras %}
+{% load extras i18n %}
 {% load static from staticfiles %}
 {% block title %}{{ model_name }}{% endblock title %}
 {% block lib %}
@@ -8,12 +8,11 @@
 {% endblock %}
 
 {% block body %}
-
 <script>
 jQuery(document).ready(function() {
     $.fn.editable.defaults.mode = 'popup';
     $('.xedit').editable({
-            url: '{% url "model_update" model_name %}',
+            /* url: '{#  url "model_update" model_name #}',
             type: 'text',
             success: function(s){
                 if(s == 'status'){
@@ -24,14 +23,14 @@ jQuery(document).ready(function() {
             },
             error: function(e){
                 alert('Error Processing your Request!!'+e);
-            }
+            }*/
     });
     /*$(document).on('click','.editable-submit',function(){
         var id = $(this).closest('td').children('span').attr('id');
         var val = $('.input-sm').val();
         var el = $(this).closest('td').children('span');
         $.ajax({
-            url: '{% url "model_update" model_name %}',
+            url: '{# url "model_update" model_name  #} ',
             type: 'GET',
             success: function(s){
                 if(s == 'status'){
@@ -50,9 +49,9 @@ jQuery(document).ready(function() {
     <thead>
         <tr>
             <th>ID</th>
-        {% for f in model %}
+        {% for f in model_fields %}
             <th>
-                {{ f.help_text }}
+                {{ f.field.label }}
             </th>
         {% endfor %}
         </tr>
@@ -61,15 +60,23 @@ jQuery(document).ready(function() {
     <tbody>
         <tr>
             <td id="0:{{ obj.id }}">{{ obj.id }}</td>
-            {% for f in model %}
-                <td id="{{ forloop.counter }}:{{ obj.id }}">
-                    <a href="#" class="myeditable editable editable-click xedit" data-pk="{{ obj.id }}" id="{{ obj.id }}" data-url="{% url "model_update" model_name %}" data-type="text" >{{ obj|by_attrname:f.name }}</a>
+            {% for f in model_fields %}
+                <td id="{{ obj.id }}">
+                    <a href="#" class="myeditable editable editable-click xedit" data-pk="{{ obj.id }}" data-name="{{ f.field.name }}" data-value="{{ obj|by_attrname:f.field.name }}" data-url="{% url "model_update" model_name %}" data-type="{{ f.field_type }}" >{{ obj|by_attrname:f.field.name }}</a>
                 </td>
             {% endfor %}
         </tr>
     </tbody>
     {% endfor %}
     </table>
-    <div><textarea id="console" class="form-control" rows="8" style="width: 70%" autocomplete="off"></textarea></div>
+    <div class="stretch">
+		<form action="" method="post"  class="section primary form">
+			<header>{% trans model_name %}</header>
+			{{ form }}
+			<footer>
+				<button class="btn primary" name="save">{% trans 'Добавить' %}</button>
+			</footer>
+		</form>
+	</div><div><textarea id="console" class="form-control" rows="8" style="width: 70%" autocomplete="off"></textarea></div>
 
 {% endblock %}
