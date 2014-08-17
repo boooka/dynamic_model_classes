@@ -124,8 +124,8 @@ def create_model(docname, data):
             'form': fields.IntegerField(),
         },
         'date': {
-            'model': DateField(auto_now=True),
-            'form': fields.DateTimeField(widget=widgets.DateTimeInput),
+            'model': DateField(),
+            'form': fields.DateField(widget=widgets.DateInput),
         },
     }
 

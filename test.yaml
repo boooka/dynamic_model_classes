@@ -1,11 +1,16 @@
 users:
  title: Пользователи
  fields:
- - {id: name, title: Имя, type: char}     
+ - {id: name, title: Имя, type: char}
  - {id: paycheck, title: Зарплата, type: int}
  - {id: date_joined, title: Дата поступления на работу, type: date}
 rooms:
  title: Комнаты
  fields:
- - {id: department, title: Отдел, type: char}     
+ - {id: department, title: Отдел, type: char}
  - {id: spots, title: Вместимость, type: int}
+foods:
+ title: Продукты
+ fields:
+ - {id: food_name, title: Название, type: char}
+ - {id: food_type, title: Тип, type: char}

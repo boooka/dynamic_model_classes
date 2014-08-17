@@ -2,11 +2,11 @@
 import json
 
 from django.views.decorators.csrf import csrf_exempt
+from django.forms.models import model_to_dict
 from annoying.decorators import render_to
 from django_ajax.decorators import ajax
 from models import get_model, DynamicModel
 from forms import DynamicForm
-
 
 
 __author__ = 'boo'
@@ -50,14 +50,16 @@ def model_content_view(request, model_name=None, object_id=None):
     if request.method == 'POST':
         form = DynamicForm(request.POST, instance=model())
         if form.is_valid() and u'save' in request.POST:
-            o = form.save()
+            obj = form.save()
     else:
-        form = DynamicForm(instance=model())
+        if object_id:
+            objs = model.objects.get(id=object_id)
+            form = DynamicForm(instance=objs)
+        else:
+            objs = model.objects.all()
+            form = DynamicForm(instance=model())
 
-    if object_id:
-        objs = model.objects.get(id=object_id)
-    else:
-        objs = model.objects.all()
+
 
     model_fields = [{
                 'field': f,
@@ -69,7 +71,7 @@ def model_content_view(request, model_name=None, object_id=None):
     return {
         'model_fields': model_fields,
         'model_name': model_name,
-        'objs': objs,
+        'objs': model.objects.all(),
         'models': get_models,
         'form': form,
     }
@@ -98,9 +100,17 @@ def sync(request, model_name=None):
 
     if request.method == 'POST':
         #TODO: check and save data
-        form = DynamicForm(request.POST, instance=model())
-        if form.is_valid() and u'pk' in request.POST:
+        pk = u'pk' in request.POST and request.POST['pk']
+        obj = model.objects.get(pk=pk)
+        initial_data = model_to_dict(obj)
+        changed_data = initial_data.copy()
+        changed_data.update({request.POST['name']: request.POST['value']})
 
-        return json.dumps({'message':'Ajax work'})
+        form = DynamicForm(changed_data, initial=model_to_dict(obj), instance=obj)
+
+        if form.is_valid() and pk:
+
+            form.save()
+            return json.dumps({'message':'Update record %s id field %s' % (pk, request.POST['name'])})
 
     return json.dumps({'message':'Something went wrong!'})

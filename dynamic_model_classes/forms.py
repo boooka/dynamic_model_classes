@@ -1,6 +1,6 @@
 from django.forms import ModelForm, BaseForm, BaseModelForm
 from django.forms.models import ErrorList
-from django.forms.models import fields_for_model
+from django.forms.models import fields_for_model, model_to_dict
 
 __author__ = 'boo'
 
