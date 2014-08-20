@@ -14,3 +14,9 @@ foods:
  fields:
  - {id: food_name, title: Название, type: char}
  - {id: food_type, title: Тип, type: char}
+flats:
+ title: Квартиры
+ fields:
+ - {id: flat_address, title: Адрес, type: char}
+ - {id: flat_rooms, title: Комнат, type: int}
+ - {id: flat_type, title: Смежные, type: int}

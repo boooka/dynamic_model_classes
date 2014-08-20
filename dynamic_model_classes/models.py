@@ -88,14 +88,20 @@ class DynamicModel(models.Model):
 
 class StoredYamlModel(models.Model):
 
+    class Meta:
+        managed = True
+
     id = models.AutoField(primary_key=True)
     filepath = models.FilePathField()
-
+    filesize = models.BigIntegerField()
     def __unicode__(self):
         return u'%s' % self.id
 
 
 class YamlDocsModel(models.Model):
+
+    class Meta:
+        managed = True
 
     id = models.AutoField(primary_key=True)
     storedby = models.ForeignKey(StoredYamlModel)
@@ -181,11 +187,6 @@ def create_model(docname, data):
         admin_opts={},
         options=options,
     )
-
-# create urls
-#     from django.db.models.loading import cache
-#     cache.register_models('', *reg_models)
-
 
 
 @models.permalink
