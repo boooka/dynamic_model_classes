@@ -29,7 +29,7 @@ class Command(BaseCommand):
         f = open(absfname)
         # now try to get parsed data from yaml formated file
         for data in yaml.load_all(f.read(-1)):
-            # for late use it will be save if model(s) loaded from structured file
+            # for late use it will be saved and not loaded from structured file
             stored = StoredYamlModel(filepath=absfname)
             stored.save()
 

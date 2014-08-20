@@ -37,6 +37,7 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django_ajax',
+    'south',
     'dynamic_model_classes',
 )
 

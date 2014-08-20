@@ -20,7 +20,7 @@ if __name__ == '__main__':
                   "Programming Language :: Python",
                   "Topic :: Software Development :: Libraries :: Python Modules",
               ],
-          install_requires=['pyyaml', 'django', 'django-annoying', 'django-ajax'],
+          install_requires=['pyyaml', 'django', 'django-annoying', 'django-ajax', 'south'],
           package_data={'dynamic_model_classes.views': ['templates/*.html']},
           include_package_data=True,
           )

@@ -59,8 +59,11 @@ class DynamicModel(models.Model):
         abstract = True
 
     @classmethod
-    def model_name(cls):
-        return cls._meta.model.__name__
+    def class_name(cls):
+        "Returns a name for current model class"
+        if hasattr(cls._meta,'model_name'):
+            return cls._meta.model_name
+        return _('undefined model')
 
     @classmethod
     def get_model(cls):
@@ -76,11 +79,11 @@ class DynamicModel(models.Model):
         return 'Undefined attribute'
 
 
-    def __unicode__(self):
-        return u'%s: %s' % (
-            self.model_name(),
-            ','.join([unicode(getattr(self,f.name)) for f in self._meta.fields])
-        )
+    # def __unicode__(self):
+    #     return u'%s: %s' % (
+    #         self.model_name(),
+    #         ','.join([unicode(getattr(self,f.name)) for f in self._meta.fields])
+    #     )
 
 
 class StoredYamlModel(models.Model):
@@ -104,6 +107,11 @@ class YamlDocsModel(models.Model):
 
 class CharField(models.CharField):
     template_type = _('text')
+    max_length = 255
+    def __init__(self,*args, **kwargs):
+        if 'max_length' not in kwargs:
+            kwargs['max_length'] = self.max_length
+        super(CharField, self).__init__(*args, **kwargs)
 
 class IntegerField(models.IntegerField):
     template_type = _('text')
@@ -116,16 +124,16 @@ def create_model(docname, data):
     # init mapped types
     maptypes = {
         'char': {
-            'model': CharField(max_length=255),
-            'form': fields.CharField(),
+            'model': CharField,
+            'form': fields.CharField,
         },
         'int' : {
-            'model': IntegerField(),
-            'form': fields.IntegerField(),
+            'model': IntegerField,
+            'form': fields.IntegerField,
         },
         'date': {
-            'model': DateField(),
-            'form': fields.DateField(widget=widgets.DateInput),
+            'model': DateField,
+            'form': fields.DateField,
         },
     }
 
@@ -146,16 +154,15 @@ def create_model(docname, data):
                 continue
 
             fieldname = field['id']
-            prefields[fieldname] = maptypes['char']['model']
-            formfields[fieldname] = maptypes['char']['form']
-            if 'type' in field:
-                prefields[fieldname] = maptypes[field.get('type')]['model']
-                formfields[fieldname] = maptypes[field.get('type')]['form']
-            if 'title' in field:
-                title = field.get('title')
-                setattr(prefields[fieldname], 'label', title)
-                setattr(formfields[fieldname], 'label', title)
-    # m = type(doc, (models.Model,), dict(fields=prefields, __module__='dynamic_model_classes.models'))
+            # create fields as CharFields if type not defined
+            prefields[fieldname] = maptypes[field.get('type') or 'char']['model']()
+            formfields[fieldname] = maptypes[field.get('type') or 'char']['form']()
+
+            # set label as exist title else use field name
+            setattr(prefields[fieldname], 'label', field.get('title') or fieldname)
+            setattr(formfields[fieldname], 'label', field.get('title') or fieldname)
+
+    # prepare params
     params = dict(
         app_label=__package__,
         module=__name__,
@@ -165,7 +172,8 @@ def create_model(docname, data):
     myform = type('%sForm' % str(docname), (DynamicForm,),dict(fields=formfields))
 
     # create dynamic model by params
-    created = create_abstract(
+
+    return create_abstract(
         '%(doc)s' % params,
         app_label=params['app_label'],
         fields=prefields,

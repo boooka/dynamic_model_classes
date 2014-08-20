@@ -14,12 +14,16 @@ class Command(RunserverCommand):
         # load already exists models
         mobjs = YamlDocsModel.objects.all()
         for mobj in mobjs:
-            create_model(mobj.docname, json.loads(mobj.definition))
-
+            model_created = create_model(mobj.docname, json.loads(mobj.definition))
+            if self.verbosity:
+                self.stdout.write('Created model "%s"' % model_created)
 
 
     def handle(self, addrport, *args, **options):
 
+        self.verbosity = int(options.get('verbosity')) > 1
+
+        # all loaded models before well be saved in db and can be preloaded without source file
         self.setupdynamicmodels()
 
         # check models from files
@@ -30,3 +34,4 @@ class Command(RunserverCommand):
 
         # передаем управление методу базового класса
         super(Command, self).handle(addrport, *args, **options)
+
