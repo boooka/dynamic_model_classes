@@ -26,6 +26,8 @@ class Command(RunserverCommand):
 
         self.verbosity = int(options.get('verbosity')) > 1
 
+        # TODO: may be south would be simply realy
+
         # check new or updated models from yaml files
         management.call_command('modelsyaml')
 
